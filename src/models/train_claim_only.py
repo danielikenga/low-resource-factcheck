@@ -1,74 +1,67 @@
-from datasets import load_dataset
+import numpy as np
+import pandas as pd
+from datasets import Dataset
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,
     TrainingArguments,
-    Trainer
+    Trainer,
 )
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import numpy as np
-MODEL_NAME = "xlm-roberta-base"
-LABEL2ID = {
-    "supports": 0,
-    "refutes": 1,
-    "nei": 2
-}
 
-ID2LABEL = {
-    0: "supports",
-    1: "refutes",
-    2: "nei"
-}
+MODEL_NAME = "xlm-roberta-base"
+
+LABEL2ID = {"supports": 0, "refutes": 1, "nei": 2}
+ID2LABEL = {0: "supports", 1: "refutes", 2: "nei"}
+
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
 
     precision, recall, f1, _ = precision_recall_fscore_support(
-        labels,
-        predictions,
-        average="macro"
+        labels, predictions, average="macro", zero_division=0
     )
-
     accuracy = accuracy_score(labels, predictions)
 
     return {
         "accuracy": accuracy,
         "macro_f1": f1,
         "precision": precision,
-        "recall": recall
+        "recall": recall,
     }
+
 
 def preprocess_function(examples):
     return tokenizer(
         examples["claim"],
         truncation=True,
         padding="max_length",
-        max_length=128
+        max_length=128,
     )
+
+
+def load_split(df, split_name):
+    split_df = df[df["split"] == split_name].copy()
+    split_df["label"] = split_df["label"].map(LABEL2ID)
+
+    split_df = split_df[["claim", "label", "language"]]
+    return Dataset.from_pandas(split_df, preserve_index=False)
+
 
 def main():
-
-    dataset = load_dataset(
-        "json",
-        data_files="data/processed/afrifact_nigerian_languages.jsonl"
+    df = pd.read_json(
+        "data/processed/afrifact_nigerian_languages.jsonl",
+        lines=True,
     )
 
-    dataset = dataset["train"]
+    train_dataset = load_split(df, "train")
+    val_dataset = load_split(df, "validation")
+    test_dataset = load_split(df, "test")
 
-    train_dataset = dataset.filter(lambda x: x["split"] == "train")
-    val_dataset = dataset.filter(lambda x: x["split"] == "validation")
-    test_dataset = dataset.filter(lambda x: x["split"] == "test")
-    train_dataset = train_dataset.map(
-        lambda x: {"label": LABEL2ID[x["label"]]}
-    )
-
-    val_dataset = val_dataset.map(
-        lambda x: {"label": LABEL2ID[x["label"]]}
-    )
-
-    test_dataset = test_dataset.map(
-        lambda x: {"label": LABEL2ID[x["label"]]}
-    )
+    print("Train:", len(train_dataset))
+    print("Validation:", len(val_dataset))
+    print("Test:", len(test_dataset))
 
     global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
@@ -76,11 +69,12 @@ def main():
     train_dataset = train_dataset.map(preprocess_function, batched=True)
     val_dataset = val_dataset.map(preprocess_function, batched=True)
     test_dataset = test_dataset.map(preprocess_function, batched=True)
+
     model = AutoModelForSequenceClassification.from_pretrained(
         MODEL_NAME,
         num_labels=3,
         id2label=ID2LABEL,
-        label2id=LABEL2ID
+        label2id=LABEL2ID,
     )
 
     training_args = TrainingArguments(
@@ -92,10 +86,10 @@ def main():
         per_device_eval_batch_size=8,
         num_train_epochs=3,
         weight_decay=0.01,
-        logging_dir="./logs",
+        logging_dir="outputs/logs",
         load_best_model_at_end=True,
         metric_for_best_model="macro_f1",
-        fp16=True
+        fp16=True,
     )
 
     trainer = Trainer(
@@ -103,13 +97,14 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        compute_metrics=compute_metrics
+        compute_metrics=compute_metrics,
     )
 
     trainer.train()
 
     results = trainer.evaluate(test_dataset)
-    print("\nTEST RESULTS")
+
+    print("\n TEST RESULTS ")
     print(results)
 
 
