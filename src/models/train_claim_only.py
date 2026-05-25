@@ -1,3 +1,5 @@
+import json
+import os
 import numpy as np
 import pandas as pd
 from datasets import Dataset
@@ -105,6 +107,13 @@ def main():
 
     print("\n TEST RESULTS ")
     print(results)
+
+    os.makedirs("results/baselines", exist_ok=True)
+
+    with open("results/baselines/xlmr_claim_only_results.json", "w") as f:
+        json.dump(results, f, indent=4)
+
+    print("\nSaved the results to results/baselines/xlmr_claim_only_results.json")
 
 
 if __name__ == "__main__":
