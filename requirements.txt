@@ -1,0 +1,14 @@
+datasets
+pandas
+numpy
+scikit-learn
+torch
+transformers
+sentence-transformers
+evaluate
+rank-bm25
+faiss-cpu
+tqdm
+matplotlib
+seaborn
+jupyter
