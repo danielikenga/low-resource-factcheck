@@ -80,16 +80,15 @@ def main():
     training_args = TrainingArguments(
         output_dir="outputs/xlmr_claim_only",
         eval_strategy="epoch",
-        save_strategy="epoch",
+        save_strategy="no",
         learning_rate=2e-5,
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         num_train_epochs=3,
         weight_decay=0.01,
         logging_dir="outputs/logs",
-        load_best_model_at_end=True,
-        metric_for_best_model="macro_f1",
-        fp16=True,
+        load_best_model_at_end=False,
+        fp16=False,
     )
 
     trainer = Trainer(
