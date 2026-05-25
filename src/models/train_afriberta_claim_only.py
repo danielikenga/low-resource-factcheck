@@ -113,7 +113,7 @@ def main():
     with open("results/baselines/afriberta_claim_only_results.json", "w") as f:
         json.dump(results, f, indent=4)
 
-    print("\nSaved the results to results/baselines/xlmr_claim_only_results.json")
+    print("\nSaved the results to results/baselines/afriberta_claim_only_results.json")
 
 
 if __name__ == "__main__":
