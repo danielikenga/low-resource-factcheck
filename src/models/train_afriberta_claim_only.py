@@ -66,7 +66,7 @@ def main():
     print("Test:", len(test_dataset))
 
     global tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
 
     train_dataset = train_dataset.map(preprocess_function, batched=True)
     val_dataset = val_dataset.map(preprocess_function, batched=True)
