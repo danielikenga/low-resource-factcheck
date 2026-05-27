@@ -5,6 +5,7 @@ import pandas as pd
 import random
 import torch
 from transformers import set_seed
+from scipy.special import softmax
 from datasets import Dataset
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers import (
@@ -117,14 +118,31 @@ def main():
 
     print("\n TEST RESULTS ")
     print(results)
+    predictions_output = trainer.predict(test_dataset)
 
+    logits = predictions_output.predictions
+    probabilities = softmax(logits, axis=1)
+    predicted_ids = np.argmax(logits, axis=1)
+
+    prediction_df = pd.DataFrame({
+        "language": test_dataset["language"],
+        "claim": test_dataset["claim"],
+        "gold_label": [ID2LABEL[label] for label in test_dataset["label"]],
+        "predicted_label": [ID2LABEL[pred] for pred in predicted_ids],
+        "supports_score": probabilities[:, 0],
+        "refutes_score": probabilities[:, 1],
+        "nei_score": probabilities[:, 2],
+    })
     os.makedirs("results/baselines", exist_ok=True)
 
     with open("results/baselines/afriberta_claim_only_results.json", "w") as f:
         json.dump(results, f, indent=4)
 
     print("\nSaved the results to results/baselines/afriberta_claim_only_results.json")
+    prediction_path = "results/baselines/afriberta_claim_only_predictions.csv"
+    prediction_df.to_csv(prediction_path, index=False)
 
+    print(f"Saved predictions to {prediction_path}")
 
 if __name__ == "__main__":
     main()
