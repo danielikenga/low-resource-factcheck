@@ -3,6 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 from datasets import Dataset
+import random
+import torch
+from transformers import set_seed
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers import (
     AutoTokenizer,
@@ -15,7 +18,7 @@ MODEL_NAME = "xlm-roberta-base"
 
 LABEL2ID = {"supports": 0, "refutes": 1, "nei": 2}
 ID2LABEL = {0: "supports", 1: "refutes", 2: "nei"}
-
+SEED = 42
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
@@ -52,6 +55,12 @@ def load_split(df, split_name):
 
 
 def main():
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed_all(SEED)
+    set_seed(SEED)
+
     df = pd.read_json(
         "data/processed/afrifact_nigerian_languages.jsonl",
         lines=True,
@@ -91,6 +100,8 @@ def main():
         logging_dir="outputs/logs",
         load_best_model_at_end=False,
         fp16=False,
+        seed=SEED,
+        data_seed=SEED,
     )
 
     trainer = Trainer(
