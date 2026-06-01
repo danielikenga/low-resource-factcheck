@@ -66,7 +66,7 @@ def main():
     set_seed(SEED)
 
     df = pd.read_json(
-        "data/processed/afrifact_nigerian_languages.jsonl",
+        DATA_PATH,
         lines=True,
     )
 
