@@ -6,7 +6,7 @@ import torch
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
+MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
 DATA_PATH = "data/processed/afrifact_nigerian_languages_custom_split.jsonl"
 
 RESULTS_PATH = "results/llm/qwen_claim_only_results.json"
@@ -86,7 +86,7 @@ def main():
     df = pd.read_json(DATA_PATH, lines=True)
     test_df = df[df["split"] == "custom_test"].copy()
 
-    # Smoke test first. Change to None later for full test set.
+
     LIMIT = 20
     if LIMIT is not None:
         test_df = test_df.head(LIMIT)
@@ -97,7 +97,7 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
-        torch_dtype=torch.float16,
+        dtype=torch.float16,
         device_map="auto",
         trust_remote_code=True,
     )
