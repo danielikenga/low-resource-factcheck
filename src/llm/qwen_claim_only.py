@@ -87,7 +87,7 @@ def main():
     test_df = df[df["split"] == "custom_test"].copy()
 
 
-    LIMIT = 20
+    LIMIT = None
     if LIMIT is not None:
         test_df = test_df.head(LIMIT)
 
