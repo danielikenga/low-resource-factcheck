@@ -94,7 +94,7 @@ def main():
 
     test_df = retrieval_df[retrieval_df["rank"] == 1].copy()
 
-    LIMIT = 20
+    LIMIT = None
     if LIMIT is not None:
         test_df = test_df.head(LIMIT)
 
