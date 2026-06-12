@@ -10,6 +10,9 @@ FILES = {
 
     "gold_evidence_reasoning":
         "results/llm/qwen_gold_evidence_reasoning_predictions.csv",
+
+    "bm25_evidence":
+        "results/llm/qwen_bm25_evidence_predictions.csv",
 }
 
 for experiment_name, path in FILES.items():
