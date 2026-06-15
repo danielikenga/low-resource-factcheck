@@ -41,6 +41,11 @@ results = [
         "Accuracy": 0.3943,
         "Macro_F1": 0.3182,
     },
+    {
+        "Model": "Qwen Adversarial Evidence",
+        "Accuracy": 0.3333,
+        "Macro_F1": 0.3156,
+    },
 ]
 
 df = pd.DataFrame(results)
