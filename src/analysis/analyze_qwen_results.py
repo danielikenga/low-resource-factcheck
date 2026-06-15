@@ -13,6 +13,9 @@ FILES = {
 
     "bm25_evidence":
         "results/llm/qwen_bm25_evidence_predictions.csv",
+
+    "adversarial_evidence":
+        "results/llm/qwen_adversarial_evidence_predictions.csv",
 }
 
 for experiment_name, path in FILES.items():
