@@ -4,6 +4,8 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 DATA_PATH = "data/processed/afrifact_nigerian_languages_custom_split.jsonl"
@@ -19,8 +21,50 @@ TRUSTED_SITES = [
 ]
 
 LIMIT = 10
+MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
+def translate_claim(claim, tokenizer, model):
 
+    prompt = f"""
+Translate the following Hausa, Igbo, or Yoruba claim into English.
 
+Return only the English translation.
+
+Claim:
+{claim}
+"""
+
+    messages = [
+        {"role": "system", "content": "You are a translator."},
+        {"role": "user", "content": prompt},
+    ]
+
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+    inputs = tokenizer(
+        text,
+        return_tensors="pt"
+    ).to(model.device)
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=100,
+            do_sample=False,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+
+    generated_ids = outputs[0][inputs["input_ids"].shape[-1]:]
+
+    translation = tokenizer.decode(
+        generated_ids,
+        skip_special_tokens=True
+    ).strip()
+
+    return translation
 def search_duckduckgo(query, max_results=5):
     url = "https://duckduckgo.com/html/?" + urllib.parse.urlencode({"q": query})
 
@@ -70,14 +114,35 @@ def main():
     df = pd.read_json(DATA_PATH, lines=True)
     test_df = df[df["split"] == "custom_test"].copy().head(LIMIT)
 
-    rows = []
+    print("Test examples:", len(test_df))
+    print("Loading the Qwen translation model...")
 
+    tokenizer = AutoTokenizer.from_pretrained(
+        MODEL_NAME,
+        trust_remote_code=True
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_NAME,
+        dtype=torch.float16,
+        device_map="auto",
+        trust_remote_code=True,
+    )
+    model.eval()
+    rows = []
     for count, (_, row) in enumerate(test_df.iterrows(), start=1):
         claim = str(row["claim"])
-        query = build_external_query(claim)
+
+        translated_claim = translate_claim(
+            claim,
+            tokenizer,
+            model
+        )
+
+        query = build_external_query(translated_claim)
 
         print(f"\n{count}/{len(test_df)}")
         print("CLAIM:", claim[:200])
+        print("TRANSLATION:", translated_claim[:200])
         print("QUERY:", query[:250])
 
         try:
@@ -91,12 +156,14 @@ def main():
                 "id": row["id"],
                 "language": row["language"],
                 "claim": claim,
+                "translated_claim": translated_claim,
                 "gold_label": row["label"],
                 "rank": None,
                 "title": "",
                 "url": "",
                 "snippet": "",
                 "retrieved_text": "",
+
             })
             continue
 
@@ -107,6 +174,7 @@ def main():
                 "id": row["id"],
                 "language": row["language"],
                 "claim": claim,
+                "translated_claim": translated_claim,
                 "gold_label": row["label"],
                 "rank": rank,
                 "title": result["title"],
