@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
 DATA_PATH = "data/processed/afrifact_nigerian_languages_custom_split.jsonl"
 
-NUM_SHOTS = 1
+NUM_SHOTS = 3
 RESULTS_PATH = f"results/llm/qwen_fewshot_{NUM_SHOTS}_gold_evidence_results.json"
 PREDICTIONS_PATH = f"results/llm/qwen_fewshot_{NUM_SHOTS}_gold_evidence_predictions.csv"
 
@@ -20,25 +20,27 @@ def build_fewshot_examples(train_df, num_shots):
     if num_shots == 0:
         return ""
 
-    examples = []
+    if num_shots % 3 != 0:
+        raise ValueError("NUM_SHOTS should be 0, 3, 6, or 9 for balanced labels.")
 
+    examples = []
     labels_cycle = ["supports", "refutes", "nei"]
+    shots_per_label = num_shots // 3
 
     for label in labels_cycle:
-        if len(examples) >= num_shots:
-            break
-
         label_rows = train_df[
             (train_df["label"] == label) &
             (train_df["extracted_evidence_text"].notna())
         ]
 
-        if len(label_rows) == 0:
-            continue
+        sampled_rows = label_rows.sample(
+            n=shots_per_label,
+            random_state=42,
+            replace=False
+        )
 
-        sampled = label_rows.sample(n=1, random_state=42 + len(examples)).iloc[0]
-
-        examples.append(f"""
+        for _, sampled in sampled_rows.iterrows():
+            examples.append(f"""
 Example {len(examples) + 1}
 
 Evidence:
