@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 DATA_PATH = "data/processed/afrifact_nigerian_languages_custom_split.jsonl"
 
-NUM_SHOTS = 3
+NUM_SHOTS = 6
 
 RESULTS_PATH = f"results/llm/qwen14b_fewshot_{NUM_SHOTS}_gold_evidence_results.json"
 PREDICTIONS_PATH = f"results/llm/qwen14b_fewshot_{NUM_SHOTS}_gold_evidence_predictions.csv"
