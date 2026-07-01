@@ -140,7 +140,7 @@ def main():
     fewshot_examples = build_fewshot_examples(train_df, NUM_SHOTS)
 
 
-    LIMIT = 20
+    LIMIT = None
     if LIMIT is not None:
         test_df = test_df.head(LIMIT)
 
