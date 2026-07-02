@@ -107,7 +107,13 @@ EXPERIMENTS = [
         "category": "LLM",
         "name": "Qwen 14B Few-shot (9)",
         "file": "results/llm/qwen14b_fewshot_9_gold_evidence_results.json"
-    }
+    },
+
+    {
+     "category": "LLM",
+     "name": "Qwen 14B + Google Translate",
+     "file": "results/llm/qwen14b_translated_gold_evidence_results.json"
+    },
 
 ]
 def read_metrics(file_path):
