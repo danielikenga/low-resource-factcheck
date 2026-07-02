@@ -11,9 +11,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 df = pd.read_csv(MASTER_RESULTS)
 
 
-# -------------------------------
+
 # Helper plotting function
-# -------------------------------
+
 
 def save_bar_plot(
     data,
