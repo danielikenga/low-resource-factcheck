@@ -27,6 +27,12 @@ EXPERIMENTS = [
 
     {
         "category": "Encoder",
+        "name": "XLM-R Custom Split",
+        "file": "results/baselines/xlmr_custom_split_results.json"
+    },
+
+    {
+        "category": "Encoder",
         "name": "AfriBERTa Custom Split",
         "file": "results/baselines/afriberta_custom_split_results.json"
     },
