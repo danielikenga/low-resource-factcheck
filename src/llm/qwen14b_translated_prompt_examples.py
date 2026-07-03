@@ -9,8 +9,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 DATA_PATH = "data/processed/afrifact_translated_test.jsonl"
 
-RESULTS_PATH = "results/llm/qwen14b_translated_gold_evidence_results.json"
-PREDICTIONS_PATH = "results/llm/qwen14b_translated_gold_evidence_predictions.csv"
+RESULTS_PATH = "results/llm/qwen14b_translated_prompt_examples_results.json"
+PREDICTIONS_PATH = "results/llm/qwen14b_translated_prompt_examples_predictions.csv"
 
 LABELS = ["supports", "refutes", "nei"]
 
