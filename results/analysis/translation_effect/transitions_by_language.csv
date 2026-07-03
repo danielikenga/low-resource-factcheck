@@ -1,0 +1,13 @@
+language,transition,Count
+hausa,correct_to_correct,100
+hausa,correct_to_wrong,8
+hausa,wrong_to_correct,26
+hausa,wrong_to_wrong,32
+igbo,correct_to_correct,81
+igbo,correct_to_wrong,18
+igbo,wrong_to_correct,40
+igbo,wrong_to_wrong,24
+yoruba,correct_to_correct,87
+yoruba,correct_to_wrong,21
+yoruba,wrong_to_correct,28
+yoruba,wrong_to_wrong,27

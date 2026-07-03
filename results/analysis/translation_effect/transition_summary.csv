@@ -1,0 +1,5 @@
+Transition,Count,Percentage
+correct_to_correct,268,0.5447154471544715
+wrong_to_correct,94,0.1910569105691057
+wrong_to_wrong,83,0.16869918699186992
+correct_to_wrong,47,0.09552845528455285
