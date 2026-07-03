@@ -139,13 +139,15 @@ def main():
     })
     os.makedirs("results/baselines", exist_ok=True)
 
-    with open("RESULTS_PATH", "w") as f:
+    with open(RESULTS_PATH, "w") as f:
         json.dump(results, f, indent=4)
-    print("\nSaved the results to results/baselines/xlmr_claim_only_results.json")
-    prediction_path = "results/baselines/xlmr_claim_only_predictions.csv"
+
+    print(f"\nSaved results to {RESULTS_PATH}")
+
     prediction_df.to_csv(PREDICTIONS_PATH, index=False)
 
-    print(f"Saved predictions to {prediction_path}")
+    print(f"Saved predictions to {PREDICTIONS_PATH}")
+
 
 if __name__ == "__main__":
     main()

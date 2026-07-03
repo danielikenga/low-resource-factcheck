@@ -15,18 +15,6 @@ EXPERIMENTS = [
 
     {
         "category": "Encoder",
-        "name": "XLM-R Claim Only",
-        "file": "results/baselines/xlmr_claim_only_results.json"
-    },
-
-    {
-        "category": "Encoder",
-        "name": "AfriBERTa Claim Only",
-        "file": "results/baselines/afriberta_claim_only_results.json"
-    },
-
-    {
-        "category": "Encoder",
         "name": "XLM-R Custom Split",
         "file": "results/baselines/xlmr_custom_split_results.json"
     },

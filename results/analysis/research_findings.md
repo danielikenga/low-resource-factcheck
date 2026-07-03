@@ -31,8 +31,7 @@ Interpretations recorded here should later be validated against the relevant exp
 
 | Experiment | Accuracy | Macro-F1 | Precision | Recall |
 |---|---:|---:|---:|---:|
-| XLM-R Claim Only | 0.346667 | 0.171617 | 0.115556 | 0.333333 |
-| AfriBERTa Claim Only | 0.446154 | 0.418224 | 0.435362 | 0.436935 |
+| XLM-R Custom Split | 0.459350 | 0.442156 | 0.462285 | 0.460203 |
 | AfriBERTa Custom Split | 0.497967 | 0.492296 | 0.491666 | 0.493279 |
 | XLM-R Gold Evidence | 0.630081 | 0.589212 | 0.608706 | 0.617331 |
 | AfriBERTa Gold Evidence | 0.571138 | 0.568683 | 0.576857 | 0.568618 |
@@ -52,99 +51,68 @@ Interpretations recorded here should later be validated against the relevant exp
 
 # 3. Initial Cross-Experiment Findings
 
-## 3.1 Evidence availability is a major performance factor
+## 3.1 Comparable encoder baselines on the 492-example evaluation set
 
-The encoder experiments show substantial improvements when gold evidence is available.
+The primary encoder comparison uses the custom-split XLM-R and AfriBERTa experiments evaluated on the common 492-example test set.
 
-### XLM-R
+### XLM-R Custom Split
 
-Claim-only accuracy:
+- Accuracy = 0.459350
+- Macro-F1 = 0.442156
 
-- 0.346667
-
-Gold-evidence accuracy:
-
-- 0.630081
-
-Absolute improvement:
-
-- +0.283414
-- approximately +28.34 percentage points
-
-Macro-F1 improves from:
-
-- 0.171617
-- to 0.589212
-
-This is a very large increase.
-
-### Interpretation
-
-The result suggests that the verification task is strongly evidence-dependent. Claim-only classification provides insufficient information for reliable fact verification, whereas relevant evidence substantially improves classification.
-
-This supports the dissertation's broader motivation for evidence-grounded and retrieval-augmented verification.
-
----
-
-## 3.2 AfriBERTa also benefits from evidence
-
-AfriBERTa Claim Only:
-
-- Accuracy = 0.446154
-- Macro-F1 = 0.418224
-
-AfriBERTa Gold Evidence:
-
-- Accuracy = 0.571138
-- Macro-F1 = 0.568683
-
-Absolute accuracy improvement:
-
-- +0.124984
-- approximately +12.50 percentage points
-
-### Interpretation
-
-Evidence improves both multilingual and African-focused encoder models.
-
-However, the magnitude of improvement differs between architectures.
-
-This may indicate differences in:
-- pretrained multilingual representations,
-- evidence utilisation,
-- task adaptation,
-- class decision boundaries.
-
-Further interpretation should avoid claiming architectural causality without additional controlled experiments.
-
----
-
-## 3.3 Custom splitting materially affects AfriBERTa performance
-
-AfriBERTa Claim Only:
-
-- Accuracy = 0.446154
-- Macro-F1 = 0.418224
-
-AfriBERTa Custom Split:
+### AfriBERTa Custom Split
 
 - Accuracy = 0.497967
 - Macro-F1 = 0.492296
 
+AfriBERTa exceeds XLM-R by approximately 3.86 percentage points in accuracy and 5.01 percentage points in Macro-F1 on this evaluation set.
+
 ### Interpretation
 
-The custom split improves performance relative to the initial claim-only baseline.
+Within the controlled custom-split setting, AfriBERTa performs better than XLM-R on both accuracy and Macro-F1. This is consistent with the possibility that African-language-focused pretraining is beneficial for Hausa, Igbo, and Yoruba classification. However, the experiment alone does not establish that pretraining focus is the causal mechanism, and architectural or optimisation differences should not be ruled out.
 
-This indicates that evaluation design and dataset partitioning materially affect measured performance.
+---
 
-This is important for the methodology chapter because low-resource datasets can be particularly sensitive to:
-- split composition,
-- label distribution,
-- language distribution,
-- source overlap,
-- topic distribution.
+## 3.2 Gold-evidence encoder performance
 
-The exact mechanism should be interpreted only after confirming the construction of both splits.
+On the common 492-example evaluation set, the gold-evidence encoder conditions achieve higher scores than the custom-split claim-input encoder baselines. These differences are reported as cross-condition performance differences; they should not be interpreted as a strictly isolated causal effect of evidence unless the remaining training and preprocessing conditions are confirmed to be equivalent.
+
+### XLM-R
+
+- Custom-split baseline accuracy = 0.459350
+- Gold-evidence accuracy = 0.630081
+- Absolute accuracy difference = +0.170731
+- Custom-split baseline Macro-F1 = 0.442156
+- Gold-evidence Macro-F1 = 0.589212
+- Absolute Macro-F1 difference = +0.147056
+
+### AfriBERTa
+
+- Custom-split baseline accuracy = 0.497967
+- Gold-evidence accuracy = 0.571138
+- Absolute accuracy difference = +0.073171
+- Custom-split baseline Macro-F1 = 0.492296
+- Gold-evidence Macro-F1 = 0.568683
+- Absolute Macro-F1 difference = +0.076387
+
+### Interpretation
+
+The gold-evidence conditions are associated with higher performance for both encoder families on the shared evaluation set. The increase is larger for XLM-R than for AfriBERTa in these experiments. This supports the importance of evidence availability for the verification task, while avoiding a stronger causal claim than the experimental design warrants.
+
+---
+
+## 3.3 Methodological comparability note
+
+Earlier claim-only encoder outputs containing 1,950 predictions are retained as legacy artefacts but are excluded from the primary master comparison because they were not evaluated on the common 492-example custom test set.
+
+A claim-text audit found that only 384 of the 492 custom-test claims were represented in each 1,950-row legacy prediction file, with 108 custom-test claims absent. Direct score comparisons between those legacy outputs and the 492-example experiments would therefore confound model performance with evaluation-set composition.
+
+For this reason:
+
+- XLM-R Custom Split is used as the primary comparable XLM-R baseline.
+- AfriBERTa Custom Split is used as the primary comparable AfriBERTa baseline.
+- The 1,950-row legacy claim-only encoder scores are not used for direct performance-difference claims in the main analysis.
+- Comparisons in the master results should be restricted to experiments aligned to the common 492-example evaluation set, with translated-input experiments interpreted according to their intentional preprocessing condition.
 
 ---
 
@@ -169,15 +137,15 @@ Absolute improvement:
 
 ### Interpretation
 
-The larger model demonstrates substantially stronger evidence-conditioned fact verification.
+Under the evaluated gold-evidence condition, Qwen 14B substantially outperforms Qwen 1.5B on both accuracy and Macro-F1.
 
-This suggests that model capacity is important for:
-- multilingual semantic reasoning,
+This result is consistent with the larger model having stronger capability for evidence-conditioned verification, potentially including:
+- multilingual semantic processing,
 - claim-evidence alignment,
-- contradiction detection,
+- contradiction recognition,
 - instruction following.
 
-However, model size alone does not solve the task, as Qwen 14B still achieves only 64.02% accuracy on original-language gold evidence.
+However, the comparison does not isolate model scale as the sole causal factor, because checkpoint-specific representation, optimisation, and instruction-following differences may also contribute. Moreover, Qwen 14B still achieves only 64.02% accuracy on original-language gold evidence.
 
 ---
 
@@ -221,7 +189,7 @@ The 9-shot configuration performs worse than the baseline.
 
 ### Interpretation
 
-Increasing the number of demonstrations does not produce monotonic improvement.
+Performance does not improve monotonically as the number of demonstrations increases.
 
 Potential explanations include:
 - prompt interference,
@@ -230,9 +198,11 @@ Potential explanations include:
 - label bias,
 - poor transfer from examples to low-resource claim-evidence relations.
 
+These explanations remain hypotheses because the experiment varies demonstration count without separately isolating the underlying mechanism.
+
 ### Report-ready insight
 
-More demonstrations are not automatically beneficial. In this experiment, additional few-shot examples produced diminishing and eventually negative returns.
+More demonstrations are not automatically beneficial. In this experiment, few-shot performance was non-monotonic: the 6-shot condition produced only a small accuracy increase over the zero-shot gold-evidence baseline while reducing Macro-F1, and the 9-shot condition underperformed the baseline on both metrics.
 
 ---
 
@@ -255,22 +225,24 @@ Absolute change:
 
 ### Interpretation
 
-Generic examples substantially reduce performance.
+Under this translated-input setup, adding generic prompt examples substantially reduces performance.
 
-This is a major negative result and should be reported rather than hidden.
+This is an important negative result and should be reported rather than hidden.
 
-The likely explanation is that generic demonstrations introduce a mismatch between:
+Possible explanations include mismatch between:
 - simplified demonstration patterns,
 - real Afrifact examples,
 - culturally specific entities,
 - noisy evidence,
 - complex multilingual relations.
 
+These explanations remain hypotheses because demonstration alignment was not independently manipulated or measured.
+
 ### Report-ready insight
 
-Prompt demonstrations can be harmful when they are not distributionally aligned with the target task.
+In this experiment, adding generic prompt demonstrations to the translated-input condition was associated with substantially lower performance than translation alone.
 
-This result complements the earlier few-shot experiments and suggests that prompt-example quality and task alignment are more important than simply increasing the number of demonstrations.
+This result complements the earlier few-shot experiments and suggests that the usefulness of demonstrations may depend on their quality and task alignment rather than simply their number.
 
 ---
 
@@ -297,9 +269,9 @@ However, recall rises substantially as the retrieval depth increases:
 
 ### Key retrieval insight
 
-BM25 often retrieves the correct evidence somewhere in the candidate set but struggles to rank it first.
+BM25 retrieves the correct evidence within the top 10 for approximately 62.80% of queries, but places it at rank 1 for only approximately 19.72%.
 
-This suggests a potential distinction between:
+This observed gap suggests a potential distinction between:
 - candidate generation,
 - candidate ranking.
 
@@ -323,19 +295,19 @@ Qwen 1.5B BM25 Evidence:
 
 ### Interpretation
 
-Replacing oracle gold evidence with BM25-retrieved evidence reduces verification performance.
+Under the evaluated Qwen 1.5B conditions, performance is lower with BM25-retrieved evidence than with oracle gold evidence.
 
-This demonstrates an oracle-to-retrieved evidence gap.
+This demonstrates an observed oracle-to-retrieved evidence performance gap.
 
-The result suggests that retrieval quality directly constrains downstream fact verification.
+The result is consistent with retrieval quality being an important constraint on downstream fact verification, although the comparison should not be interpreted as a strictly isolated causal estimate unless all remaining pipeline conditions are confirmed equivalent.
 
 ### Important dissertation interpretation
 
-Gold-evidence experiments measure verification capability under oracle evidence access.
+Gold-evidence experiments measure verification performance under oracle evidence access.
 
-BM25 experiments measure a more realistic retrieval-augmented pipeline.
+BM25 experiments measure performance under a more realistic retrieval-augmented condition.
 
-The performance difference quantifies part of the cost introduced by imperfect evidence retrieval.
+The observed performance difference estimates the oracle-to-retrieved condition gap in this experimental setup; it should not automatically be attributed entirely to retrieval error without confirming equivalence of the remaining conditions.
 
 ---
 
@@ -361,11 +333,13 @@ This indicates sensitivity to misleading or mismatched evidence.
 
 ### Report-ready insight
 
-Evidence grounding is beneficial only when evidence quality is reliable. Supplying misleading evidence can substantially degrade model decisions.
+In this experiment, the adversarial-evidence condition performs substantially worse than the gold-evidence condition. This indicates that misleading or mismatched context can degrade model decisions under the evaluated setup.
 
-This supports a broader argument that retrieval-augmented fact checking requires both:
+The result supports the importance of both:
 - retrieval relevance,
-- robustness to misleading context.
+- robustness to misleading context
+
+in retrieval-augmented fact-checking systems.
 
 ---
 
@@ -395,11 +369,11 @@ Absolute Macro-F1 improvement:
 
 ### Interpretation
 
-Translation into English produces the strongest overall result among the current experiments.
+The English-translated input condition produces the strongest overall result among the current experiments.
 
-However, subsequent analysis shows that this gain is highly non-uniform.
+However, subsequent analysis shows that this gain is highly non-uniform across languages and labels.
 
-Translation should therefore not be described as a universally beneficial preprocessing step.
+The result should therefore not be interpreted as evidence that translation is universally beneficial, nor as direct evidence of improved reasoning in the original Hausa, Igbo, and Yoruba inputs.
 
 ---
 
@@ -460,7 +434,7 @@ Absolute improvement:
 
 - +37.50 percentage points
 
-This is the dominant source of translation improvement.
+The later transition decomposition shows that improved performance on refutes examples is the dominant source of the net translation-associated gain.
 
 ## 12.2 Supports performance declines
 
@@ -482,11 +456,11 @@ NEI accuracy changes only slightly:
 
 ### Central interpretation
 
-Translation acts asymmetrically across fact-verification relations.
+Translation is associated with asymmetric changes across fact-verification labels.
 
-It strongly improves contradiction recognition while slightly damaging entailment recognition.
+It substantially improves accuracy on refutes examples while reducing accuracy on supports examples.
 
-This is one of the strongest findings of the dissertation.
+This label-specific asymmetry is a central empirical finding of the dissertation and is consistent with improved contradiction recognition alongside weaker entailment recognition under the translated-input condition.
 
 ---
 
@@ -521,7 +495,7 @@ This exactly corresponds to the overall accuracy increase:
 
 ### Report-ready insight
 
-Translation is a net-positive but lossy transformation. It repairs twice as many decisions as it damages, yet the 47 regressions demonstrate that translation introduces meaningful semantic risk.
+Translation is net-positive at the aggregate prediction level but is also associated with regressions. It repairs twice as many decisions as it damages, yet the 47 correct-to-wrong transitions demonstrate meaningful prediction-regression risk under the translated-input condition.
 
 ---
 
@@ -627,7 +601,7 @@ Total:
 
 ### Report-ready interpretation
 
-The overall translation gain should not be interpreted as uniform multilingual improvement. It is primarily a contradiction-detection effect.
+The overall translation-associated gain should not be interpreted as uniform multilingual improvement. The transition decomposition shows that the net improvement is driven primarily by improved performance on refutes examples.
 
 ---
 
@@ -653,7 +627,7 @@ Translation improves refutes accuracy for every language:
 - Igbo: +40.00 percentage points
 - Yoruba: +35.19 percentage points
 
-This is a highly consistent cross-language pattern.
+This is a descriptively consistent cross-language pattern in the evaluated sample, although no claim of statistical significance is made here.
 
 ## Major anomaly
 
@@ -671,9 +645,9 @@ Absolute decline:
 The weak overall Yoruba translation gain is not because translation fails uniformly on Yoruba.
 
 Instead:
-- Yoruba refutes improves strongly,
-- Yoruba NEI improves,
-- Yoruba supports collapses.
+- Yoruba refutes accuracy improves strongly,
+- Yoruba NEI accuracy improves,
+- Yoruba supports accuracy declines substantially.
 
 This interaction is substantially more informative than aggregate language accuracy alone.
 
@@ -725,7 +699,7 @@ However:
 
 ### Interpretation
 
-Translation substantially improves contradiction recognition but also shifts some supported claims toward false contradiction decisions.
+The translated-input condition substantially increases correct predictions for refutes examples, while also increasing supports-to-refutes errors from 2 to 13. This pattern is consistent with improved contradiction recognition accompanied by a greater tendency to assign some supported claims to the refutes class.
 
 ---
 
@@ -773,14 +747,14 @@ Evidence:
 
 ### Interpretation
 
-Translation exposes an explicit ordinal contradiction:
+In this illustrative case, the translated input presents an explicit ordinal contrast:
 
 - second
 - versus first
 
 ### Hypothesised mechanism
 
-Improved accessibility of ordinal semantics enables the model to recognise contradiction.
+A plausible mechanism is that the translated wording makes the ordinal contrast more accessible to the model, contributing to the corrected refutes prediction.
 
 ---
 
@@ -807,14 +781,14 @@ Evidence:
 
 ### Interpretation
 
-The translated text makes the event-role contradiction explicit:
+In this illustrative case, the translated text presents a clearer contrast between:
 
 - honoured by institution
 - versus prosecuted by institution
 
 ### Hypothesised mechanism
 
-Translation improves access to event predicates and institutional role relations.
+A plausible mechanism is improved model access to event predicates and institutional role relations in the translated wording.
 
 ---
 
@@ -841,11 +815,11 @@ Evidence concerns:
 
 ### Interpretation
 
-Translation makes the entity mismatch easier to detect.
+In this illustrative case, the translated wording may make the entity mismatch easier for the model to detect.
 
 ### Hypothesised mechanism
 
-Improved entity-role discrimination after translation.
+A plausible mechanism is improved entity-role discrimination under the translated wording.
 
 ---
 
@@ -868,7 +842,7 @@ Evidence discusses detainees and individuals in police custody.
 
 ### Interpretation
 
-Translation exposes lexical relations around:
+In this illustrative case, the translated wording presents lexical relations around:
 
 - arrested,
 - detainees,
@@ -876,7 +850,7 @@ Translation exposes lexical relations around:
 
 ### Hypothesised mechanism
 
-Improved recognition of semantically related detention concepts.
+A plausible mechanism is improved recognition of semantically related detention concepts under the translated wording.
 
 ### Caveat
 
@@ -923,7 +897,7 @@ Numerical/ranking semantic corruption.
 
 ### Significance
 
-This demonstrates that translation can alter factual content rather than merely surface form.
+In this illustrative case, qualitative inspection indicates that the translated text alters factual content rather than merely surface form.
 
 ---
 
@@ -956,7 +930,7 @@ Culturally grounded lexical ambiguity and mistranslation.
 
 ### Significance
 
-This is particularly important for low-resource African-language NLP because culturally specific vocabulary may not map reliably into generic English lexical categories.
+This case highlights a potential risk for low-resource African-language NLP: culturally specific vocabulary may be mistranslated into unrelated or overly generic English lexical categories. The broader prevalence of this problem is not established by a single case.
 
 ---
 
@@ -989,9 +963,9 @@ Proposition-level predicate mistranslation.
 
 ### Significance
 
-The model is no longer verifying the same proposition after translation.
+In this illustrative case, the translated wording appears to change the proposition being presented to the model.
 
-This is a direct example of translation-induced label instability.
+The associated supports-to-refutes transition is consistent with translation-related prediction instability, although the single case does not establish the prevalence of this mechanism.
 
 ---
 
@@ -1066,21 +1040,23 @@ This case should therefore be described as a possible translation-amplified mism
 
 ## Central finding
 
-Translation is not a uniformly beneficial preprocessing operation.
+Translation is not uniformly beneficial in the evaluated setup.
 
-Instead, it behaves as a task-dependent semantic intervention.
+At the aggregate level, the English-translated input condition improves overall Qwen 14B performance, but the effect is strongly heterogeneous across labels and languages. The transition analysis shows that the net gain is driven primarily by improved performance on refutes examples.
 
-### Benefits
+### Observed benefits and plausible repair patterns
 
-Translation substantially improves:
-- contradiction recognition,
-- ordinal mismatch detection,
-- entity mismatch detection,
-- event-role contradiction recognition.
+Quantitatively, the translated-input condition substantially improves refutes-class accuracy. Qualitative inspection of selected repaired cases suggests plausible patterns involving:
+- clearer ordinal contrasts,
+- clearer entity mismatches,
+- clearer event-role contrasts,
+- improved accessibility of semantically related contradiction cues.
 
-### Risks
+These qualitative patterns are illustrative and should not be interpreted as established mechanisms for all repaired predictions.
 
-Translation can introduce:
+### Observed risks and illustrative regression patterns
+
+The translated-input condition also produces 47 correct-to-wrong transitions. Qualitative inspection of selected regression cases identifies examples consistent with:
 - culturally specific lexical mistranslation,
 - numerical corruption,
 - ranking corruption,
@@ -1088,9 +1064,11 @@ Translation can introduce:
 - domain-specific terminology distortion,
 - proposition strengthening or semantic drift.
 
+Because translation quality was not manually annotated across all 492 examples, these patterns should be treated as plausible qualitative explanations rather than population-level causal findings.
+
 ### Strong report-ready statement
 
-Translation substantially improved overall Qwen 14B verification performance, but the gain was highly asymmetric. The improvement was driven primarily by refuted claims, whose accuracy increased from 25.0% to 62.5% across consistent gains in Hausa, Igbo, and Yoruba. Conversely, supported claims declined overall, with Yoruba supports falling by 27.27 percentage points. Qualitative inspection linked successful repairs to clearer ordinal, entity, and event-role contradictions, while regressions were associated with mistranslated culturally specific terms, altered numerical semantics, and proposition-level predicate corruption.
+The English-translated input condition substantially improved overall Qwen 14B verification performance, but the gain was highly asymmetric. The net improvement was driven primarily by refutes examples, whose accuracy increased from 25.0% to 62.5%, with positive changes observed in Hausa, Igbo, and Yoruba. Conversely, supports accuracy declined overall, with Yoruba supports decreasing by 27.27 percentage points. Qualitative inspection of systematically selected illustrative cases suggests that some repaired predictions are consistent with clearer ordinal, entity, and event-role contrasts, while selected regressions are consistent with culturally specific lexical mistranslation, altered numerical semantics, and proposition-level predicate corruption. These qualitative patterns are plausible mechanisms rather than population-level causal explanations.
 
 ---
 
@@ -1276,15 +1254,15 @@ The six principal systems ranked as follows by accuracy:
 
 ### Interpretation
 
-The ranking indicates that performance is governed by more than the mere presence of evidence. Three factors emerge as particularly important:
+The ranking indicates that performance differs substantially across conditions varying model checkpoint, evidence source, and input-language representation. Three experimentally relevant dimensions are:
 
-- model capacity;
-- evidence quality;
-- linguistic accessibility of the input.
+- model/checkpoint choice;
+- evidence condition;
+- input-language representation.
 
-The strongest result was obtained by translating low-resource-language claims and evidence before classification with Qwen 14B. This suggests that a capable multilingual LLM may still possess substantially stronger verification competence when semantically equivalent content is presented in a higher-resource language representation.
+The strongest result was obtained by translating low-resource-language claims and evidence before classification with Qwen 14B. This result is consistent with the model achieving stronger verification performance when content is presented in English. However, because translation can alter semantic content, the experiment does not establish that every translated input is semantically equivalent to its original or that linguistic accessibility alone causes the gain.
 
-The weak BM25 and adversarial results demonstrate that evidence-conditioned fact verification is highly sensitive to the relevance and reliability of the supplied context. Retrieval is therefore not automatically beneficial.
+The lower BM25 and adversarial results show that performance is substantially weaker under these evidence conditions than under oracle gold evidence. This indicates that supplying evidence is not automatically beneficial in the evaluated setup.
 
 ---
 
@@ -1304,11 +1282,11 @@ Accuracy increased from 0.390244 to 0.459350.
 
 Gold evidence improved aggregate accuracy, but the matched transition analysis reveals substantial instability. Although 152 previously incorrect examples were repaired, 118 previously correct examples became incorrect after evidence was introduced.
 
-This is important because aggregate accuracy alone hides the fact that evidence can both repair and damage predictions. The 1.5B model appears unable to exploit evidence consistently. It may be influenced by lexical overlap, partial semantic cues, or misleading details within longer contexts.
+This is important because aggregate accuracy alone hides the fact that introducing gold evidence is associated with both repaired and regressed predictions. Under this setup, the 1.5B model does not convert access to gold evidence into uniform example-level improvement. Possible contributors include lexical overlap, partial semantic cues, or distracting details within longer contexts, but these mechanisms were not independently isolated.
 
-Therefore, the finding is not simply that evidence improves performance. A more accurate conclusion is:
+Therefore, the finding is not simply that evidence improves every prediction. A more accurate conclusion is:
 
-> Relevant evidence provides useful verification signal, but smaller language models may lack sufficient reasoning capacity to use that signal reliably.
+> Under the evaluated Qwen 1.5B setup, gold evidence improves aggregate accuracy while producing substantial bidirectional example-level transitions, indicating that access to relevant evidence does not guarantee consistent use of that evidence.
 
 ---
 
@@ -1326,15 +1304,15 @@ Accuracy fell from 0.459350 with gold evidence to 0.394309 with BM25 evidence.
 
 ### Interpretation
 
-Replacing oracle gold evidence with top-ranked BM25 retrieval caused a net loss of 32 correct predictions.
+Replacing oracle gold evidence with top-ranked BM25 retrieval was associated with a net loss of 32 correct predictions.
 
-Only 23 previously wrong examples were repaired by BM25 retrieval, whereas 55 previously correct examples were damaged. This indicates a clear retrieval bottleneck.
+Only 23 previously wrong examples became correct under the BM25 condition, whereas 55 previously correct examples became wrong. This indicates a clear oracle-to-retrieved evidence performance gap.
 
-The result demonstrates that a retrieval-augmented fact-checking pipeline can underperform an oracle-evidence system because retrieval quality constrains downstream classification. Even when the classifier is unchanged, substituting imperfect retrieved evidence for gold evidence materially changes the prediction outcome.
+Because the classifier is unchanged across these conditions, the result is consistent with the supplied evidence being an important constraint on downstream classification. However, the observed gap should be interpreted within the exact pipeline setup rather than as a pure causal estimate of retrieval error unless all other processing conditions are confirmed equivalent.
 
 This supports a central dissertation argument:
 
-> Retrieval-augmented misinformation detection is constrained not only by classifier capability but by whether the retriever supplies evidence that is genuinely discriminative for verification.
+> Retrieval-augmented misinformation detection depends not only on classifier capability but also on whether the retrieval stage supplies evidence that is useful for verification.
 
 ---
 
@@ -1359,21 +1337,19 @@ By language:
 
 ### Interpretation
 
-This is one of the strongest behavioural findings in the dissertation.
+This is a strong descriptive behavioural finding in the evaluated BM25 pipeline.
 
-The BM25 system did not merely perform poorly in a random manner. It overwhelmingly predicted `supports`, assigning this label to more than four-fifths of the evaluation set.
+The BM25 system overwhelmingly predicted `supports`, assigning this label to more than four-fifths of the evaluation set. The identified support-bias failures were distributed across all three languages.
 
-A plausible mechanism is lexical-overlap bias. BM25 retrieves passages using term overlap rather than contradiction-aware semantic reasoning. Consequently, retrieved passages may share entities, topics, or surface vocabulary with a claim without actually supporting it.
+A plausible mechanism is lexical-overlap bias. Because BM25 ranks passages using term-based matching rather than contradiction-aware verification, retrieved passages may share entities, topics, or surface vocabulary with a claim without actually supporting it.
 
-When such topically related evidence is passed to the LLM, the classifier may interpret relevance as entailment.
+One hypothesis is that, when such topically related evidence is passed to the LLM, relevance may sometimes be over-interpreted as entailment. The following should therefore be treated as a hypothesised failure chain rather than an established causal sequence:
 
-This suggests the following failure chain:
-
-1. BM25 rewards lexical similarity.
-2. Lexically similar evidence is retrieved.
-3. The evidence appears topically relevant.
-4. The LLM over-interprets relevance as support.
-5. Refuted and insufficient-information claims are incorrectly classified as `supports`.
+1. BM25 rewards term-based similarity.
+2. A lexically or topically related passage is retrieved.
+3. The passage appears relevant to the claim.
+4. The classifier may over-interpret relevance as support.
+5. Some refuted and insufficient-information claims are classified as `supports`.
 
 The result provides an important distinction between:
 
@@ -1440,15 +1416,17 @@ Model scaling produced the largest positive net gain among the matched pairwise 
 
 The 14B model repaired 146 errors made by the 1.5B model while introducing only 57 regressions, yielding a net gain of 89 correct examples.
 
-This provides strong evidence that model capacity materially affects low-resource fact verification even when the evidence condition remains constant.
+This provides strong evidence of a substantial performance difference between the evaluated Qwen 1.5B and Qwen 14B checkpoints under the same gold-evidence condition. The result is consistent with model scale contributing to low-resource fact-verification performance, but the comparison does not isolate parameter count from other checkpoint-specific differences.
 
-The larger model may benefit from:
+Possible contributors to the larger model's performance include:
 
 - stronger multilingual representations;
 - improved contextual reasoning;
 - better entity and relation tracking;
 - stronger contradiction recognition;
 - more robust instruction following.
+
+These contributors remain hypotheses because they were not independently ablated.
 
 However, 120 examples remained wrong under both 1.5B and 14B gold-evidence conditions. Scaling therefore substantially improves performance but does not eliminate systematic failure.
 
@@ -1481,15 +1459,15 @@ Macro F1 increased from:
 
 ### Interpretation
 
-Translation produced a substantial improvement even though the underlying factual task remained unchanged.
+The translated-input condition produced a substantial improvement while using the same Qwen 14B model checkpoint.
 
-The same model was used before and after translation. Therefore, the improvement cannot be attributed to increased model size. Instead, the result indicates that the language in which information is presented materially affects the model's ability to reason over evidence.
+The improvement therefore cannot be attributed to increased model size between these two conditions. It is consistent with input-language representation materially affecting verification performance. However, because translation can also alter semantic content, the experiment does not isolate linguistic accessibility from translation-induced changes to the proposition or evidence.
 
 A central interpretation is:
 
-> Translation functions as a model-access intervention, mapping low-resource-language content into a linguistic representation in which the LLM can use its reasoning capabilities more effectively.
+> Translation can function as a model-access intervention by mapping low-resource-language content into English, where the evaluated LLM achieves stronger verification performance; however, this benefit is non-uniform and may be accompanied by semantic distortion.
 
-This does not imply that translation universally improves every example. The transition analysis showed 47 correct-to-wrong regressions. Translation is therefore beneficial overall but non-uniform.
+The transition analysis showed 47 correct-to-wrong regressions. Translation is therefore beneficial overall in aggregate performance but non-uniform at the example level.
 
 ---
 
@@ -1519,7 +1497,7 @@ Yoruba improved by only:
 
 - +4.29 percentage points
 
-This demonstrates that translation should not be treated as a uniform preprocessing intervention. Its effect is language-dependent.
+This shows that the observed translation-associated performance change is not uniform across languages in the evaluated sample.
 
 The smaller Yoruba gain later proved especially important because class-specific analysis revealed substantial damage to Yoruba `supports` examples.
 
@@ -1537,7 +1515,7 @@ Per-label accuracy changed as follows:
 
 ### Interpretation
 
-The overall translation gain was driven primarily by contradiction recognition.
+The overall translation-associated gain was driven primarily by improved performance on `refutes` examples.
 
 For `refutes`, accuracy increased from 25.00% to 62.50%:
 
@@ -1550,7 +1528,7 @@ By contrast:
 
 This is a major result because it shows that the 9.55-point overall gain was not a uniform improvement across classes.
 
-The translated representation appears particularly effective at exposing contradictions that the model previously failed to recognise.
+The pattern is consistent with the translated-input condition making some contradiction relations more accessible to the model, although the aggregate class-level result does not by itself establish the mechanism.
 
 ---
 
@@ -1568,7 +1546,7 @@ Per-language `refutes` changes were:
 
 ### Interpretation
 
-The improvement in contradiction recognition was not isolated to one language.
+The improvement in `refutes` accuracy was not isolated to one language.
 
 Refutes accuracy increased by:
 
@@ -1576,9 +1554,9 @@ Refutes accuracy increased by:
 - +37.21 percentage points for Hausa;
 - +35.19 percentage points for Yoruba.
 
-This cross-language consistency strengthens the interpretation that translation improves the model's access to contradiction cues.
+This descriptively consistent cross-language pattern is compatible with the hypothesis that translated wording improves model access to some contradiction cues, although the mechanism is not directly isolated by the experiment.
 
-The original model frequently mapped refuted claims to NEI, suggesting that it failed to recognise the semantic relationship required for contradiction. Translation often converted these uncertain decisions into correct refutations.
+Under the original-language condition, many refuted claims were mapped to NEI. After translation, a substantial number of previously incorrect `refutes` examples became correct. This transition pattern is consistent with improved recognition of contradiction relations, but should not be treated as proof of a single causal mechanism.
 
 ---
 
@@ -1601,7 +1579,7 @@ Prediction changed:
 
 ### Interpretation
 
-Translation exposed a direct ordinal contradiction between `second` and `first`.
+In this illustrative case, the translated wording presented a direct ordinal contrast between `second` and `first`, alongside a change from NEI to the correct `refutes` prediction.
 
 ---
 
@@ -1622,7 +1600,7 @@ Prediction changed:
 
 ### Interpretation
 
-The translated representation made the relation between the entity and the EFCC clearer. The evidence described prosecution rather than an honour or award.
+In this illustrative case, the translated representation presented a clearer contrast between the claim's award relation and the evidence's prosecution relation. This is a plausible explanation for the corrected `refutes` prediction rather than proof of the mechanism.
 
 ---
 
@@ -1641,7 +1619,7 @@ Prediction changed:
 
 ### Interpretation
 
-Translation exposed an entity mismatch between Dauda and Ibrahim.
+In this illustrative case, the translated wording presented an entity mismatch between Dauda and Ibrahim, which is a plausible contributor to the corrected `refutes` prediction.
 
 ---
 
@@ -1661,15 +1639,15 @@ A dedicated case extraction identified 20 Yoruba `supports` examples that change
 
 ### Interpretation
 
-This is a critical counter-result.
+This is an important counter-result.
 
-Translation is not a universally safe preprocessing step. In some cases it introduces semantic distortion severe enough to reverse correct predictions.
+Translation is not uniformly beneficial at the example or language-label level. In the evaluated Yoruba `supports` subset, 20 previously correct examples became incorrect after translation.
 
-The Yoruba result prevents an overly simplistic conclusion that English translation always improves low-resource verification.
+The Yoruba result prevents an overly simplistic conclusion that English translation always improves low-resource verification. Qualitative inspection of selected regression cases identifies examples consistent with semantic distortion, but translation quality was not manually annotated across the full subset.
 
 A more defensible conclusion is:
 
-> Translation provides a strong average benefit but can introduce language-specific semantic corruption.
+> Translation provides a strong aggregate benefit in this experiment but is also associated with substantial language- and label-specific regressions; selected qualitative cases suggest that semantic corruption is one plausible contributor.
 
 ---
 
@@ -1694,7 +1672,7 @@ The model changed:
 
 ### Interpretation
 
-A numerical/ranking translation error destroyed the original entailment relation.
+In this illustrative case, the translated evidence altered the numerical ranking and measured property, removing the apparent entailment relation present in the original example.
 
 ---
 
@@ -1711,7 +1689,7 @@ Translated claim became:
 
 ### Interpretation
 
-The culturally specific food term `gaari` was incorrectly translated into `sugar`, changing the subject of the claim.
+In this illustrative case, the culturally specific food term `gaari` was rendered as `sugar`, changing the subject of the translated claim.
 
 ---
 
@@ -1723,7 +1701,7 @@ The Yoruba statement concerning breastfeeding and lives saved was translated int
 
 ### Interpretation
 
-A major semantic translation error corrupted the core proposition and damaged verification.
+In this illustrative case, the translated wording appears to alter the core proposition substantially, alongside a regression in the verification prediction.
 
 ---
 
@@ -1741,18 +1719,18 @@ Adding generic prompt examples reduced performance to:
 
 ### Interpretation
 
-Generic examples were actively harmful.
+Under this translated-input setup, adding generic examples was associated with substantially lower performance.
 
 This is an important negative result. Prompt examples are not automatically beneficial, even when they appear logically clear and task-relevant.
 
-A plausible explanation is that generic demonstrations introduced an artificial decision pattern that did not align with the distributional characteristics of the Afrifact evaluation data.
+One plausible explanation is mismatch between the generic demonstrations and the distributional characteristics of the Afrifact evaluation data. Possible mechanisms include:
 
-The demonstrations may have:
+- altered label preferences;
+- superficial analogy to demonstration patterns;
+- interference with dataset-specific evidence interpretation;
+- poor transfer of generic verification patterns to culturally and linguistically specific claims.
 
-- shifted the model's decision boundary;
-- encouraged superficial analogy;
-- interfered with dataset-specific evidence interpretation;
-- imposed generic verification patterns that did not transfer to culturally and linguistically specific claims.
+These mechanisms were not independently isolated and should therefore be presented as hypotheses.
 
 The finding supports the conclusion that:
 
@@ -1804,15 +1782,15 @@ Prediction distributions were:
 
 ### Interpretation
 
-The systems do not simply differ in accuracy. They exhibit qualitatively different label preferences.
+The systems do not simply differ in accuracy. Their observed prediction distributions differ substantially.
 
-The 1.5B gold and BM25 systems are strongly support-biased.
+The 1.5B gold and BM25 systems assign `supports` to a large majority of examples.
 
-The 14B gold model is strongly NEI-biased.
+The 14B gold model assigns NEI to a large majority of examples.
 
-Translation substantially increases the model's willingness to predict `refutes`, consistent with the large improvement in contradiction recognition.
+Under the translated-input condition, the proportion of `refutes` predictions increases substantially, alongside the observed increase in `refutes` accuracy.
 
-This suggests that interventions such as retrieval, scaling, and translation reshape the classifier's decision behaviour rather than uniformly improving all classes.
+These descriptive distributions indicate that changes in evidence condition, model checkpoint, and input-language representation are associated with different class-prediction patterns rather than uniform improvement across all classes.
 
 ---
 
@@ -1828,24 +1806,24 @@ Best observed system by class:
 
 ### Interpretation
 
-No single model configuration dominates every verification class.
+No single evaluated configuration achieves the highest class-specific accuracy for every verification label.
 
-The translated 14B model is strongest for:
+The translated 14B model achieves the highest observed accuracy for:
 
-- contradiction recognition;
-- insufficient-information recognition.
+- `refutes`;
+- NEI.
 
-However, Qwen 1.5B Gold Evidence achieves the highest `supports` accuracy at 92.17%.
+However, Qwen 1.5B Gold Evidence achieves the highest observed `supports` accuracy at 92.17%.
 
-This reinforces the finding that system improvements are class-dependent and may involve trade-offs.
+This reinforces the finding that observed system performance is class-dependent and may involve trade-offs.
 
-The smaller model's very high supports accuracy must also be interpreted alongside its strong support prediction bias. High class-specific accuracy does not necessarily imply balanced verification competence.
+The smaller model's very high `supports` accuracy must also be interpreted alongside the fact that 75.81% of all its predictions are `supports`. High class-specific accuracy does not necessarily imply balanced verification competence.
 
 ---
 
 ## 17. Best model by language
 
-The translated Qwen 14B model was best for all three languages:
+Among the evaluated systems, the translated Qwen 14B model achieved the highest overall accuracy for all three languages:
 
 | Language | Accuracy |
 |---|---:|
@@ -1855,11 +1833,11 @@ The translated Qwen 14B model was best for all three languages:
 
 ### Interpretation
 
-The translated 14B system provides the strongest overall performance across all three target languages.
+Among the evaluated systems, the translated 14B condition provides the strongest overall performance for each of the three target-language subsets.
 
-However, the lower Yoruba result remains consistent with the observed translation-induced damage to Yoruba supports examples.
+However, the lower Yoruba result coexists with the substantial observed regression in Yoruba `supports` accuracy after translation.
 
-Thus, the model is best across all languages while still exhibiting meaningful language-specific weaknesses.
+Thus, the same system can achieve the highest aggregate language-level accuracy while still exhibiting important language-label-specific weaknesses.
 
 ---
 
@@ -1887,20 +1865,20 @@ Among the 29 universally hard examples:
 
 ### Interpretation
 
-The most striking result is the overwhelming concentration of universal failures in the `refutes` class.
+The most striking descriptive result is the concentration of universal failures in the `refutes` class.
 
-25 of 29 universally hard examples were refutations.
+25 of 29 examples misclassified by all six principal systems were refutations.
 
-This demonstrates that contradiction recognition is the dominant persistent failure mode across:
+Within this 29-example universal-error subset, persistent failure is therefore concentrated in `refutes` examples across the evaluated:
 
-- model scales;
-- claim-only classification;
-- gold evidence;
-- BM25 retrieval;
-- adversarial evidence;
-- translation.
+- model checkpoints;
+- claim-only condition;
+- gold-evidence condition;
+- BM25-retrieval condition;
+- adversarial-evidence condition;
+- translated-input condition.
 
-The problem is therefore deeper than one specific architecture or prompt configuration.
+This pattern indicates that the identified hard refutations persist across multiple evaluated configurations. Because the subset contains only 29 examples and the systems are not an exhaustive sample of architectures or prompting strategies, the result should not be generalised to all fact-verification systems.
 
 ---
 
@@ -1914,11 +1892,11 @@ The 25 persistent hard refutes were distributed as:
 
 ### Interpretation
 
-Yoruba accounts for more than half of persistent hard refutes.
+Yoruba accounts for 13 of the 25 persistent hard `refutes` examples in this subset.
 
-This aligns with other evidence that Yoruba presents distinctive challenges in the current pipeline, including the substantial supports-class degradation after translation.
+This coexists with other Yoruba-specific patterns in the current pipeline, including the substantial `supports`-class degradation after translation. However, these observations concern different subsets and should not by themselves be interpreted as evidence of a single shared language-level cause.
 
-However, because the hard-error subset is small, these findings should be interpreted diagnostically rather than as population-wide statistical estimates.
+Because the hard-error subset is small, these findings should be interpreted diagnostically rather than as population-wide statistical estimates.
 
 ---
 
@@ -1951,15 +1929,15 @@ It should not be presented as a statistically representative taxonomy of all dat
 
 ### Interpretation
 
-The largest category was `evidence_insufficient`, accounting for 24% of persistent hard refutes.
+The largest category was `evidence_insufficient`, accounting for 24% of the 25 persistent hard refutes.
 
-This suggests that some examples labelled `refutes` may not contain evidence that clearly establishes contradiction.
+This suggests that some examples in this manually reviewed subset may not contain evidence that clearly establishes contradiction.
 
-The second-largest category was `entity_attribute_mismatch` at 20%, showing that systems struggle when contradiction depends on assigning the wrong property, profession, identity, origin, or characteristic to an entity.
+The second-largest category was `entity_attribute_mismatch` at 20%. Within this subset, persistent failures therefore also occurred when contradiction depended on differences in properties, professions, identities, origins, or other entity characteristics.
 
 Negation and role-relation mismatches each accounted for 12%.
 
-Overall, persistent contradiction errors are heterogeneous. They cannot be explained by a single weakness such as negation failure.
+Overall, the manually reviewed persistent contradiction errors were heterogeneous and were not reducible to a single observed category such as negation failure.
 
 ---
 
@@ -1973,13 +1951,13 @@ Among the 25 persistent hard refutes:
 
 ### Interpretation
 
-Only 44% of persistent hard refutes contained explicit contradictions.
+Within the 25-example persistent hard-refute subset, 44% were manually categorised as explicit contradictions.
 
-A combined 56% were either implicit or ambiguous.
+A combined 56% were categorised as either implicit or ambiguous.
 
-This is a crucial explanation for the difficulty of the `refutes` class. Many examples require more than surface-level contradiction detection.
+This pattern offers one plausible explanation for the persistence of errors within this subset: many reviewed cases appeared to require more than surface-level contradiction detection.
 
-The model may need to reason over:
+Relevant reasoning demands in the reviewed cases included:
 
 - entity attributes;
 - roles;
@@ -1989,7 +1967,7 @@ The model may need to reason over:
 - boundary conditions;
 - unstated implications.
 
-This supports the argument that low-resource fact verification requires relational and inferential reasoning, not merely lexical comparison.
+The analysis is therefore consistent with the argument that some low-resource fact-verification cases require relational and inferential reasoning rather than lexical comparison alone.
 
 ---
 
@@ -2003,19 +1981,19 @@ Manual review produced:
 
 ### Interpretation
 
-Only 56% of persistent hard refutes were judged clearly free from annotation suspicion.
+Only 56% of the 25 persistent hard refutes were manually judged clearly free from annotation suspicion.
 
 For 28%, an annotation issue was suspected, while another 16% remained uncertain.
 
-This means 44% of the persistent hard-refute subset had some degree of annotation concern.
+Thus, 44% of this selected persistent-error subset had some degree of annotation concern under the manual review.
 
-This should be interpreted cautiously. It does not establish that 44% of the full dataset is incorrectly annotated.
+This should be interpreted cautiously. It does not establish that 44% of the full dataset is incorrectly annotated, nor does the selected subset support a population-wide prevalence estimate.
 
-Instead, it suggests that the most persistent model failures are disproportionately associated with examples where the evidence-label relationship may be unclear or debatable.
+Instead, the review suggests that some of the most persistent observed failures coincide with examples where the evidence-label relationship may be unclear or debatable.
 
 A defensible conclusion is:
 
-> The observed performance ceiling may partly reflect dataset and evidence-quality limitations in addition to model limitations.
+> Some observed persistent errors may reflect dataset or evidence-quality limitations in addition to model limitations.
 
 ---
 
@@ -2051,15 +2029,15 @@ Observed category counts were:
 
 ### Interpretation
 
-The error mechanisms vary by language.
+Within the manually reviewed persistent hard-refute subset, the observed category composition differed by language.
 
-Yoruba displays the broadest spread of persistent error types and contains the largest number of persistent hard refutes.
+Yoruba displayed the broadest spread of assigned error categories and contained the largest number of persistent hard refutes.
 
-Igbo persistent failures are fewer and concentrated mainly in role-relation mismatch, negation, and insufficient evidence.
+The four Igbo cases were assigned to role-relation mismatch, negation, and insufficient-evidence categories.
 
-Hausa errors span entity, causal, temporal, boundary, and implicit contradiction mechanisms.
+The eight Hausa cases spanned entity, causal, temporal, boundary, insufficient-evidence, and implicit-contradiction categories.
 
-Given the small subset sizes, these patterns should be described as qualitative tendencies rather than definitive language-wide distributions.
+Given the small and selected subset sizes, these patterns should be described as qualitative tendencies within the reviewed cases rather than definitive language-wide distributions.
 
 ---
 
@@ -2078,13 +2056,13 @@ Observed pattern:
 
 ### Interpretation
 
-Gold evidence improves performance, BM25 nearly collapses back to claim-only performance, and adversarial evidence performs worse than claim-only classification.
+In this Qwen 1.5B comparison, gold evidence improves aggregate performance, the BM25-evidence condition achieves accuracy close to the claim-only condition, and the adversarial-evidence condition performs worse than claim-only classification.
 
-Therefore:
+Therefore, the evaluated results support the interpretation that:
 
-> The value of evidence is conditional on evidence quality.
+> The value of supplied evidence depends on its relevance and reliability.
 
-This is a central finding for retrieval-augmented misinformation detection.
+This is a central finding of the evaluated retrieval-augmented misinformation-detection setup.
 
 ---
 
@@ -2100,17 +2078,17 @@ The BM25 system showed:
 
 ### Interpretation
 
-The retriever can fundamentally reshape downstream classifier behaviour.
+Replacing gold evidence with top-ranked BM25 evidence was associated with substantial changes in downstream predictions.
 
-The results suggest that lexical retrieval may be inadequate when verification requires:
+The results suggest that the evaluated lexical-retrieval setup may be insufficient for cases requiring:
 
 - contradiction-aware matching;
 - semantic distinction;
-- entity relation reasoning;
+- entity-relation reasoning;
 - temporal reasoning;
 - recognition that relevant evidence is not necessarily supporting evidence.
 
-A future system should consider:
+Future work could evaluate:
 
 - dense multilingual retrieval;
 - hybrid sparse-dense retrieval;
@@ -2121,7 +2099,7 @@ A future system should consider:
 
 ---
 
-## 27. Scaling and translation solve different problems
+## 27. Scaling and translation show distinct performance associations
 
 Scaling from 1.5B to 14B produced:
 
@@ -2133,16 +2111,16 @@ Translation at 14B produced:
 
 ### Interpretation
 
-These interventions are complementary.
+Both interventions were associated with substantial gains, but the current comparisons do not isolate their underlying mechanisms.
 
-Scaling improves the model's general capacity to interpret evidence and reason over claims.
+Increasing model scale from 1.5B to 14B under the gold-evidence condition produced the larger matched net gain. Translating the inputs to English while holding the 14B model condition fixed produced a further gain.
 
-Translation improves linguistic accessibility, allowing the larger model to use its existing reasoning capabilities more effectively.
+One plausible interpretation is that model capacity and input-language representation affect different aspects of evidence-conditioned verification. However, the experiments do not establish a two-stage causal mechanism or prove that the interventions are complementary in a factorial sense.
 
-This suggests a two-stage explanation:
+A hypothesis for future testing is:
 
-1. sufficient model capacity is needed for evidence reasoning;
-2. accessible linguistic representation is needed for that capacity to be fully expressed.
+1. greater model capacity may improve use of evidence;
+2. a more accessible linguistic representation may improve performance for some low-resource inputs.
 
 ---
 
@@ -2160,15 +2138,15 @@ Translation:
 
 ### Interpretation
 
-Translation should be understood as a high-impact but asymmetric intervention.
+In the evaluated setup, translation was associated with a large but asymmetric performance change.
 
-It repairs many contradiction failures but can damage entailment when culturally specific terms, numerical relations, or semantic details are mistranslated.
+It repaired many previously incorrect `refutes` predictions while also introducing regressions, particularly for `supports`. Qualitative inspection of selected cases identified errors consistent with mistranslation of culturally specific terms, numerical relations, and other semantic details, but these mechanisms were not manually annotated across all examples.
 
-This motivates language-aware translation quality controls rather than universal blind translation.
+The findings motivate evaluation of language-aware translation quality controls rather than assuming that translation is uniformly beneficial.
 
 ---
 
-## 29. Contradiction recognition is the central unresolved challenge
+## 29. Persistent errors are concentrated in contradiction cases
 
 Evidence:
 
@@ -2180,15 +2158,15 @@ Evidence:
 
 ### Interpretation
 
-The dissertation's strongest overarching error-analysis conclusion is:
+A strong overarching conclusion from the evaluated error analyses is:
 
-> Contradiction recognition is the principal unresolved challenge in low-resource evidence-based fact verification.
+> Persistent errors in the evaluated systems are disproportionately concentrated in `refutes` examples.
 
-The difficulty arises not only from language representation but from the inferential structure of contradiction itself.
+The manual review further suggests that some of these cases involve implicit or ambiguous relations rather than explicit contradiction cues. This is consistent with the hypothesis that inferential structure contributes to difficulty alongside language representation, although the present experiments do not establish contradiction recognition as the principal unresolved challenge for low-resource fact verification in general.
 
 ---
 
-## 30. Dataset quality contributes to the observed ceiling
+## 30. Dataset quality may contribute to observed persistent errors
 
 Among 25 persistent hard refutes:
 
@@ -2198,11 +2176,11 @@ Among 25 persistent hard refutes:
 
 ### Interpretation
 
-Some apparent model failures may be partly attributable to weak evidence-label alignment.
+Manual review suggests that some apparent model failures in the selected persistent hard-refute subset may be partly attributable to weak or debatable evidence-label alignment.
 
-This is particularly important for evaluation. If the supplied evidence does not clearly refute the claim, a model predicting NEI may be semantically defensible even when scored as incorrect against the dataset label.
+This is important for evaluation. In cases where the supplied evidence does not clearly refute the claim, an NEI prediction may be semantically defensible even when scored as incorrect against the dataset label.
 
-Therefore, model performance should be interpreted alongside dataset quality rather than as a pure measure of reasoning ability.
+Therefore, model performance should be interpreted alongside possible dataset and evidence-quality limitations rather than as a pure measure of reasoning ability.
 
 ---
 
@@ -2210,32 +2188,32 @@ Therefore, model performance should be interpreted alongside dataset quality rat
 
 The complete experimental evidence supports the following research narrative:
 
-1. Low-resource claim verification is difficult under claim-only conditions.
-2. Gold evidence improves performance, but small models use evidence inconsistently.
-3. BM25 retrieval fails to reproduce oracle-evidence gains and induces severe support bias.
-4. Misleading evidence can reduce performance below claim-only classification.
-5. Increasing model scale substantially improves evidence reasoning.
-6. Translating low-resource content into English produces the strongest overall system.
-7. Translation gains are driven primarily by improved contradiction recognition.
-8. Translation can also corrupt culturally specific and language-specific semantics, especially for Yoruba supports examples.
-9. Generic prompt demonstrations can reduce performance rather than improve it.
-10. Persistent failures concentrate overwhelmingly in the refutes class.
-11. Hard contradictions frequently require implicit relational reasoning rather than explicit negation.
-12. A meaningful proportion of persistent failures involve questionable evidence-label alignment.
-13. The main bottlenecks are therefore not reducible to model size alone: retrieval quality, linguistic accessibility, contradiction reasoning, and dataset quality all contribute.
+1. Under the evaluated claim-only condition, Qwen 1.5B achieved limited accuracy.
+2. Gold evidence improved aggregate Qwen 1.5B performance, but matched transitions showed both repairs and regressions.
+3. The evaluated BM25 condition did not reproduce the gold-evidence gain and exhibited a very high `supports` prediction rate.
+4. The adversarial-evidence condition performed below claim-only classification.
+5. Increasing model scale from Qwen 1.5B to 14B under gold evidence produced a substantial matched performance gain.
+6. Translating the evaluated low-resource inputs into English produced the highest overall accuracy among the tested systems.
+7. The aggregate translation gain was driven primarily by improved performance on `refutes` examples.
+8. Translation was also associated with substantial regressions, especially for Yoruba `supports`; selected qualitative cases were consistent with several forms of semantic distortion.
+9. Generic prompt demonstrations reduced performance in the evaluated translated-input setup.
+10. Among the 29 examples missed by all six principal systems, 25 were `refutes`.
+11. Manual review of 25 persistent hard refutes found that 56% were categorised as implicit or ambiguous.
+12. Within that selected persistent-error subset, a substantial proportion of cases raised some degree of evidence-label or annotation concern.
+13. Collectively, the experiments indicate that end-to-end performance is associated with multiple components, including retrieval quality, input-language representation, model scale, contradiction-related reasoning demands, and evidence-label quality.
 
 ## Core dissertation contribution emerging from the experiments
 
-The experiments collectively suggest that successful low-resource retrieval-augmented misinformation detection requires alignment across four components:
+The experiments collectively suggest that low-resource retrieval-augmented misinformation detection should be evaluated across at least four interacting components:
 
 - linguistic representation;
 - retrieval quality;
-- model reasoning capacity;
+- model capacity;
 - evidence-label validity.
 
-Failure in any one component can dominate end-to-end performance.
+The current experiments show that weaknesses in these components can be associated with substantial end-to-end performance changes.
 
-The strongest observed system used translation and a larger LLM, but the error analysis demonstrates that even this configuration remains constrained by contradiction complexity and evidence quality.
+The strongest observed system used translated inputs and the larger evaluated LLM, while the error analysis showed that this configuration still made substantial errors, particularly on `refutes` examples, and that some persistent cases raised evidence-quality concerns.
 
-This provides a richer conclusion than simply identifying the highest-performing model. The dissertation demonstrates how and why performance changes across retrieval, scaling, translation, prompting, and adversarial evidence conditions.
+This provides a richer conclusion than simply identifying the highest-performing model. The dissertation characterises how performance and error patterns change across the evaluated retrieval, model-scale, translation, prompting, and adversarial-evidence conditions, while distinguishing observed effects from hypothesised mechanisms.
 
