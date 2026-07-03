@@ -110,9 +110,15 @@ EXPERIMENTS = [
     },
 
     {
-     "category": "LLM",
-     "name": "Qwen 14B + Google Translate",
-     "file": "results/llm/qwen14b_translated_gold_evidence_results.json"
+        "category": "LLM",
+        "name": "Qwen 14B + Google Translate",
+        "file": "results/llm/qwen14b_translated_gold_evidence_results.json"
+    },
+
+    {
+        "category": "LLM",
+        "name": "Qwen 14B + Translate + Generic Examples",
+        "file": "results/llm/qwen14b_translated_prompt_examples_results.json"
     },
 
 ]
