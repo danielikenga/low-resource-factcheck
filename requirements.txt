@@ -2,6 +2,7 @@ datasets
 pandas
 numpy
 scikit-learn
+scipy
 torch
 transformers
 sentence-transformers
@@ -12,3 +13,6 @@ tqdm
 matplotlib
 seaborn
 jupyter
+beautifulsoup4
+deep-translator
+requests
